@@ -1,0 +1,143 @@
+import React, { Component } from 'react';
+import { Map, GoogleApiWrapper, InfoWindow, Marker, Listing } from 'google-maps-react';
+const mapStyles = {
+    width: '80%',
+    height: '80%'
+};
+var points = [
+    { lat: 12.9095333, lng: 80.2209337 },
+    { lat: 12.9095334, lng: 80.2209338 },
+    { lat: 12.9095335, lng: 80.2209339 },
+    { lat: 12.9095336, lng: 80.2209340 }
+]
+
+export class MapContainer extends Component {
+    state = {
+        showingInfoWindow: false,
+        activeMarker: {},
+        selectedPlace: {},
+        places:[],
+        bounds: {}
+    };
+    onMarkerClick = (props, marker, e) =>
+        this.setState({
+            selectedPlace: props,
+            activeMarker: marker,
+            showingInfoWindow: true
+        });
+
+    onClose = props => {
+        if (this.state.showingInfoWindow) {
+            this.setState({
+                showingInfoWindow: false,
+                activeMarker: null,
+                places: {}
+            });
+        }
+    };
+
+    mapClicked(mapProps, map, clickEvent) {
+        console.log(clickEvent);
+
+    }
+    fetchPlaces(mapProps, map) {
+      
+        const { google } = mapProps;
+        const service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+            location: { lat: 12.9095333, lng: 80.2209337 },
+            radius:2000,
+            type: ['hotel']
+        }, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (var i = 0; i < results.length; i++) {
+                    var place = results[i];
+                console.log(place.name);
+
+                }
+
+            }
+
+        });
+    }
+    onMapClicked = (mapProps, map, clickEvent) => {
+
+        this.setState({
+            activeMarker: null,
+            showingInfoWindow: false
+        });
+    }
+    onBoundsChanged = (mapProps, map, event) => {
+        this.setState({
+            bounds: map.getBounds()
+        });
+    }
+   
+    render() {
+        // var bounds = new this.props.google.maps.LatLngBounds();
+        // for (var i = 0; i < points.length; i++) {
+        //     bounds.extend(points[i]);
+        // }
+        return (
+
+            <Map google={this.props.google}
+                zoom={14}
+                style={mapStyles}
+                initialCenter={{ lat: 13.0826802, lng: 80.2209337 }}
+                onClick={this.mapClicked}
+                onReady={this.fetchPlaces}
+               >
+                
+                      
+                        <Marker
+                        // title={'The marker`s title will appear as a tooltip.'}
+                        name={'SOMA'}
+                        position={{lat: 13.0826802, lng: 80.2272692197085}}
+                        icon={{
+                            url: "https://picsum.photos/id/3/100/100",
+                           
+                          }}
+                        />
+                      
+                <InfoWindow
+                    marker={this.state.activeMarker}
+                    visible={this.state.showingInfoWindow}
+                    onClose={this.onClose}
+                >
+                    <div>
+                        <h4>{this.state.places}</h4>
+                    </div>
+                </InfoWindow>
+         
+
+
+
+                {
+                    // <Listing places={this.state.places} />
+                }
+                {
+                    //     <Marker
+                    // onClick={this.onMarkerClick}
+                    // name={'My Current Location'}
+                    // />
+                }
+                {
+                    //   <InfoWindow
+                    //     marker={this.state.activeMarker}
+                    //     visible={this.state.showingInfoWindow}
+                    //     onClose={this.onClose}
+                    //   >
+                    //     <div>
+                    //       <h4>{this.state.selectedPlace.name}</h4>
+                    //     </div>
+                    //   </InfoWindow>
+                }
+            </Map>
+        );
+    }
+}
+
+
+export default GoogleApiWrapper({
+    apiKey: process.env.REACT_APP_GOOGLE_API_KEY
+})(MapContainer);
